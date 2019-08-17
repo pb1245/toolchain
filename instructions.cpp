@@ -132,6 +132,7 @@ insn_type insn_table[] = {
 	{".space", NULL, 0xfff, 0xfff, DIRECTIVE},
 	{".equ", NULL, 0xfff, 0xfff, DIRECTIVE},
 	{".global", NULL, 0xfff, 0xfff, DIRECTIVE},
+	{".debug", NULL, 0xfff, 0xfff, DIRECTIVE},
 	{".extern", NULL, 0xfff, 0xfff, DIRECTIVE},
 	{".data", NULL, 0xfff, 0xfff, DIRECTIVE},
 	{".text", NULL, 0xfff, 0xfff, DIRECTIVE},

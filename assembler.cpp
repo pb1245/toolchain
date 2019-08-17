@@ -51,6 +51,7 @@ struct label_entry
 	seg_type segment;
 	bool resolved;
 	bool global;
+	bool debug;
 	label_entry *next;
 	int name_ptr;
 	int line;
@@ -969,6 +970,25 @@ void parse_line(char *buf)
 			if (still_more(operands))
 				error(input_filename, current_line, "Additional text after directive arguments.", NULL);
 		}
+		else if(strcmp(mnemonic, ".debug") == 0)
+		{
+			if (operands == NULL || parse_symbol(operands, symbol_buffer) == false)
+				error(input_filename, current_line, "Debug directive must specify a label.", NULL);
+
+			// Make the specified label debug
+			label_entry *temp = get_label(symbol_buffer);
+			if (temp->global == false)
+			{
+				// Increment the global count
+				num_globals++;
+				temp->global = true;
+				temp->debug = true;
+				temp->line = current_line;
+			}
+
+			if (still_more(operands))
+				error(input_filename, current_line, "Additional text after directive arguments.", NULL);
+		}
 		
 		else if (strcmp(mnemonic, ".mask") == 0)
 			;
@@ -1353,6 +1373,7 @@ void process_file(char* output_filename)
 
 		if (temp->global == true || temp->resolved == false)
 		{
+			// cerr << "Label with name: " << temp->name << endl;
 			temp->name_ptr = ptr - symbol_names;
 			strcpy(ptr, temp->name);
 			ptr += strlen(temp->name) + 1;
@@ -1378,6 +1399,12 @@ void process_file(char* output_filename)
 				relocation_array[reloc_num].type = GLOBAL_DATA;
 			else
 				relocation_array[reloc_num].type = GLOBAL_BSS;
+
+			if(temp->debug == true)
+			{
+				relocation_array[reloc_num].type = (reference_type)(relocation_array[reloc_num].type | DEBUG_REF);
+				// cerr << "created label with type: " << relocation_array[reloc_num].type << endl;
+			}
 
 			reloc_num++;
 		}

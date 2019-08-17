@@ -47,7 +47,8 @@ typedef enum {
 		TEXT_LABEL_REF, // This is a reference to our own text segment
 		DATA_LABEL_REF, // This is a reference to our own data segment
 		BSS_LABEL_REF,  // This is a reference to our own bss segment
-		EXTERNAL_REF    // This is an unresolved (ie. external) reference
+		EXTERNAL_REF,   // This is an unresolved (ie. external) reference
+    DEBUG_REF=0x8  // This is a reference to a debug label 
 } reference_type;
 
 char * reference_type_name[7] ={ 

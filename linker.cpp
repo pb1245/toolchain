@@ -49,6 +49,7 @@ struct label_entry
 	bool resolved;
 	label_entry *next;
 	int file_no;
+	bool debug;
 };
 
 label_entry *label_list = NULL;
@@ -326,6 +327,11 @@ int main(int argc, char *argv[])
 		for (i = 0; i < num_relocs; i++)
 		{
 			// Make a note of all the globals
+			cerr << relocation_array[i].type << endl;
+			bool debug = (relocation_array[i].type & DEBUG_REF) != 0;
+			if(debug)
+				relocation_array[i].type = (reference_type)(relocation_array[i].type & ~DEBUG_REF);
+			
 			if (relocation_array[i].type == GLOBAL_TEXT || relocation_array[i].type == GLOBAL_DATA || relocation_array[i].type == GLOBAL_BSS)
 			{
 				// Create a new label entry for this global
@@ -345,6 +351,8 @@ int main(int argc, char *argv[])
 				temp->resolved = true;
 				// Fill in the address field
 				temp->address = relocation_array[i].address;
+
+				temp->debug = debug; // Fill in the debug field
 
 				// Fill in the segment field
 				if (relocation_array[i].type == GLOBAL_TEXT)
@@ -590,6 +598,24 @@ int main(int argc, char *argv[])
 		cout << ".text segment size = 0x" << setw(8) << setfill('0') << hex << text_size << endl;
 		cout << ".data segment size = 0x" << setw(8) << setfill('0') << hex << data_size << endl;
 		cout << ".bss  segment size = 0x" << setw(8) << setfill('0') << hex << bss_size << endl;
+	}
+
+	if(true)
+	{
+		label_entry* temp = label_list;
+		ofstream outputdebugfile;
+		outputdebugfile.open("debug.map", ios::out);
+		while(temp != NULL)
+		{
+			cerr << "Label: " << temp->name << "@0x" << hex << temp->address << endl;
+			if(temp->debug)
+			{
+				outputdebugfile << temp->name << ": 0x" << hex << temp->address + file[temp->file_no].segment_address[temp->segment] << endl;
+			}
+			temp = temp->next;
+		}
+		outputdebugfile.flush();
+		outputdebugfile.close();
 	}
 
 	// What we probably want to do here, is output an S-Record
