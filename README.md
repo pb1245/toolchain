@@ -11,6 +11,9 @@ when loading new versions of WRAMPmon onto physical Basys3 boards.
 `wobj` is also included in this repositroy, `wobj` is an object viewer and disassembler in one.
 `wobj` takes .o files, and displays on stdout.
 
+## Added features from `wandwramp/toolchain`
+ - Address map using the `.debug` directive and `-d` option in `wlink`
+
 ## Usage
 
 `wasm` takes a single input file and produces a single output file, which defaults to
@@ -31,6 +34,7 @@ Again, an output file can be chosen.
 `-Tbss <address>` provides the memory address to start loading the resulting srec's .bss segment. 
 `-Ebss <address>` provides the memory address that the resulting srec's .bss segment should finish at.
 `-v` instructs `wlink` to provide verbose output.
+`-d <name>` instructs `wlink` to produce a debug map file which records the addresses of labels with the `.debug` directive.
 
 Exsposed to the programmer there are also three special labels, `bss_size`, `text_size` and `data_size`.
 These three labels provide the size of the respective segment evaluated during the linking process.
