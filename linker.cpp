@@ -32,7 +32,7 @@
 
 using namespace std;
 
-bool error_flag = false, verbose_flag = false;
+bool error_flag = false, verbose_flag = false, debug_flag = false;
 
 unsigned int starting_text_address = 0x00000, text_address, text_size = 0;
 unsigned int data_address = 0xfffff, data_size = 0;
@@ -150,7 +150,7 @@ typedef struct
 
 void usage(char *progname)
 {
-	cerr << "USAGE: " << progname << " [-Ttext address] [-Tdata address] [-[T|E]bss address] [-v] [-o output] file1 file2 ...\n";
+	cerr << "USAGE: " << progname << " [-Ttext address] [-Tdata address] [-[T|E]bss address] [-v] [-o output] [-d debug_map] file1 file2 ...\n";
 	exit(1);
 }
 
@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
 	int i;
 	char *endptr = NULL;
 	char output_filename[300] = {0};
+	char debug_filename[300] = {0};
 
 	if (argc < 2)
 		usage(argv[0]);
@@ -234,6 +235,20 @@ int main(int argc, char *argv[])
 			{
 				verbose_flag = true;
 			}
+			else if(strcmp(argv[i], "-d") == 0)
+			{
+				if ((i + 1) == argc)
+					usage(argv[0]);
+
+				// Redefinition of the output file
+				if (debug_filename[0] != '\0')
+					usage(argv[0]);
+
+				debug_flag = true;
+
+				i++;
+				strcpy(debug_filename, argv[i]);
+			}
 			else
 				usage(argv[0]);
 		}
@@ -252,6 +267,12 @@ int main(int argc, char *argv[])
 	{
 		// default to link.out
 		strcpy(output_filename, "link.out");
+	}
+
+	if(debug_filename[0] == '\0')
+	{
+		// default to link.map
+		strcpy(debug_filename, "link.map");
 	}
 
 	// Setup the linker special symbols
@@ -327,7 +348,7 @@ int main(int argc, char *argv[])
 		for (i = 0; i < num_relocs; i++)
 		{
 			// Make a note of all the globals
-			cerr << relocation_array[i].type << endl;
+			// cerr << relocation_array[i].type << endl;
 			bool debug = (relocation_array[i].type & DEBUG_REF) != 0;
 			if(debug)
 				relocation_array[i].type = (reference_type)(relocation_array[i].type & ~DEBUG_REF);
@@ -604,10 +625,17 @@ int main(int argc, char *argv[])
 	{
 		label_entry* temp = label_list;
 		ofstream outputdebugfile;
-		outputdebugfile.open("debug.map", ios::out);
+		outputdebugfile.open(debug_filename, ios::out);
+
+		if(!outputdebugfile)
+		{
+			cerr << "Error could not open output file " << outputdebugfile << endl;
+			exit(1);
+		}
+
 		while(temp != NULL)
 		{
-			cerr << "Label: " << temp->name << "@0x" << hex << temp->address << endl;
+			// cerr << "Label: " << temp->name << "@0x" << hex << temp->address << endl;
 			if(temp->debug)
 			{
 				outputdebugfile << temp->name << ": 0x" << hex << temp->address + file[temp->file_no].segment_address[temp->segment] << endl;
