@@ -2,7 +2,7 @@ CC = g++
 RM = rm -f
 CFLAGS = -std=c++98 -O3 -Wall -Wno-write-strings -g
 ifndef INSTALLDIR
-INSTALLDIR=~/wramp-install/
+INSTALLDIR=~/bin/
 endif
 MKDIR=mkdir -p
 COPY=cp
